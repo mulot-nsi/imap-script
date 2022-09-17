@@ -1,0 +1,10 @@
+{
+  "imap": {
+    "host": "",
+    "port": 143,
+    "ssl": false,
+    "user": "",
+    "password": ""
+  },
+  "student_csv_directory": ""
+}
