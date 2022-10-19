@@ -66,7 +66,7 @@ def load_csv_files(directory_path):
     return students
 
 
-def decode_realname(realname):
+def decode_real_name(realname):
     decoded_parts = []
 
     for part in email.header.decode_header(realname):
@@ -91,15 +91,25 @@ def sort_students(config, students):
 
     for num in msgnums[0].split():
         _, data = server.fetch(num, 'BODY.PEEK[HEADER.FIELDS (FROM)]')
-        realname, email_address = email.utils.parseaddr(str(data[0][1]))
-        print(realname)
-        student = students.search(decode_realname(realname))
+        real_name, email_address = email.utils.parseaddr(str(data[0][1]))
+        real_name = decode_real_name(real_name)
+        student = students.search(real_name)
+
+        output_message = real_name
 
         if student:
-            print(f"Moving email from {student['prenom']} {student['nom']} ({student['classe']})")
+            output_message += f" - \033[35m{student['prenom']} {student['nom']}\033[0m"
+
             status, _ = server.copy(num, "INBOX/ELEVES/" + student["classe"])
             if status == 'OK':
                 server.store(num, '+FLAGS', '\\Deleted')
+                output_message += f" - \033[32mMoved to {student['classe']}\033[0m"
+            else:
+                output_message += f" - \033[31mIssue during copy to {student['classe']}\033[0m"
+
+        else:
+            output_message += " - \033[36mNot student\033[0m"
+        print(output_message)
 
     server.expunge()
 
